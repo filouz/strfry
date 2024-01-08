@@ -10,7 +10,7 @@ static std::string preGenerateHttpResponse(const std::string &contentType, const
     output += std::string("Content-Type: ") + contentType + "\r\n";
     output += "Access-Control-Allow-Origin: *\r\n";
     output += "Connection: keep-alive\r\n";
-    output += "Server: strfry\r\n";
+    // output += "Server: strfry\r\n";
     output += std::string("Content-Length: ") + std::to_string(content.size()) + "\r\n";
     output += "\r\n";
     output += content;
@@ -156,18 +156,21 @@ void RelayServer::runWebsocket(ThreadPool<MsgWebsocket>::Thread &thr) {
         std::string host = req.getHeader("host").toString();
         std::string url = req.getUrl().toString();
 
-        if (url == "/.well-known/nodeinfo") {
-            auto nodeInfo = getNodeInfoHttpResponse(host);
-            res->write(nodeInfo.data(), nodeInfo.size());
-        } else if (url == "/nodeinfo/2.1") {
-            auto nodeInfo = getNodeInfo21HttpResponse();
-            res->write(nodeInfo.data(), nodeInfo.size());
-        } else if (req.getHeader("accept").toStringView() == "application/nostr+json") {
+        // if (url == "/.well-known/nodeinfo") {
+        //     auto nodeInfo = getNodeInfoHttpResponse(host);
+        //     res->write(nodeInfo.data(), nodeInfo.size());
+        // } 
+        // else if (url == "/nodeinfo/2.1") {
+        //     auto nodeInfo = getNodeInfo21HttpResponse();
+        //     res->write(nodeInfo.data(), nodeInfo.size());
+        // } 
+        if (req.getHeader("accept").toStringView() == "application/nostr+json") {
             auto info = getServerInfoHttpResponse();
             res->write(info.data(), info.size());
         } else {
-            auto landing = getLandingPageHttpResponse();
-            res->write(landing.data(), landing.size());
+            auto rendered = preGenerateHttpResponse("text/plain", "Please use a Nostr client to connect.");
+            auto text = std::string_view(rendered);
+            res->write(text.data(), text.size());
         }
     });
 
